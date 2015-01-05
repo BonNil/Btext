@@ -1,5 +1,7 @@
 package Bpackage;
 
+import rtf.AdvancedRTFEditorKit;
+
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.text.rtf.RTFEditorKit;
@@ -15,7 +17,7 @@ import java.io.*;
 public class EditorTwo {
 
 
-    // Textpane and StyledDocument
+    //Textpane and StyledDocument
     JTextPane textPane;
     StyledDocument doc;
     RTFEditorKit rtf;
@@ -24,14 +26,12 @@ public class EditorTwo {
     JFrame mainFrame;
     JPanel backPanel;
     JPanel stylePanel;
-    JComboBox styleBox;
     JToolBar toolBar;
 
     //Menu stuff
     JMenuBar menuBar;
     JMenuItem sMenuItem;
     JMenuItem lMenuItem;
-    JMenuItem sfMenuItem;
 
 
 
@@ -45,7 +45,6 @@ public class EditorTwo {
         toolBar = new JToolBar();
 
         mainFrame.setContentPane(backPanel);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Initializing textpane and document
         rtf = new RTFEditorKit();
@@ -59,16 +58,17 @@ public class EditorTwo {
         bar.add(new StyledEditorKit.ForegroundAction("Red", Color.red));
         bar.add(new StyledEditorKit.ForegroundAction("Blue", Color.blue));
         bar.add(new StyledEditorKit.FontSizeAction("12", 12));
-        bar.add(new StyledEditorKit.FontSizeAction("14", 14));
         bar.add(new StyledEditorKit.FontSizeAction("16", 16));
+        bar.add(new StyledEditorKit.FontSizeAction("24", 24));
         bar.add(new StyledEditorKit.UnderlineAction());
-
-        ImageIcon saveIcon = new ImageIcon("saveSmall.png");
-        ImageIcon loadIcon = new ImageIcon("loadSmall.png");
 
         //set up FILE menu
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
+
+        //setting up icons for load/save menuitems
+        ImageIcon saveIcon = new ImageIcon("saveSmall.png");
+        ImageIcon loadIcon = new ImageIcon("loadSmall.png");
 
         //SAVE menu item
         sMenuItem = new JMenuItem("Save", saveIcon);
@@ -82,6 +82,7 @@ public class EditorTwo {
 
         buildMenuItemListeners();
 
+        //Creating File menu and adding it to mainFrame
         fileMenu.add(sMenuItem);
         fileMenu.add(lMenuItem);
         menuBar.add(fileMenu);
@@ -90,6 +91,7 @@ public class EditorTwo {
         //set layout for backPanel
         backPanel.setLayout(new BorderLayout());
 
+        //Add to stylepanel
         stylePanel.add(bar);
 
         //add stuff to backPanel
@@ -97,6 +99,7 @@ public class EditorTwo {
         mainFrame.getContentPane().add(BorderLayout.CENTER, textPane);
 
         //Final configurations for the mainFrame
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setBounds(50, 50, 300, 300);
         mainFrame.pack();
         mainFrame.setSize(600, 600);
