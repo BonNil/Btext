@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Advanced_RTFEditorKit">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/rtfkit_nosrc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

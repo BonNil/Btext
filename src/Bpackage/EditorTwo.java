@@ -199,10 +199,12 @@ public class EditorTwo {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-
-
-                String fileName = ".\\" + node.toString();
-
+                String fileName;
+                if (System.getProperty("os.name").startsWith("Win")) {
+                    fileName = node.getParent().toString() + "\\" + node.toString();
+                }else{
+                    fileName = node.getParent().toString() + "/" + node.toString();
+                }
                     try {
                         FileWriter fr = new FileWriter(fileName);
                         textPane.write(fr);
@@ -264,32 +266,62 @@ public class EditorTwo {
                     String balle = node.getParent().toString();
                     System.out.println("Parent is " + balle);
 
-                    if (node.toString().endsWith(".txt")){
-                        try {
-                            textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                            FileInputStream fi = new FileInputStream(node.getParent().toString() +"\\"+ node.toString());
-                            textPane.read(fi, node.getParent().toString() +"\\"+ node.toString());
-                        }catch (IOException ex){
-                            System.out.println("Something went to shit");
-                            ex.printStackTrace();
-                        }
-                    } else {
-                        try {
-                            textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                            FileInputStream fi = new FileInputStream(node.getParent().toString() +"\\"+ node.toString());
-                            textPane.read(fi, node.getParent().toString() +"\\"+ node.toString());
-                        }catch (IOException e2){
-                            e2.printStackTrace();
+                    if (System.getProperty("os.name").startsWith("Win")) {
+                        if (node.toString().endsWith(".txt")) {
                             try {
-                                textPane.getDocument().remove(0, textPane.getDocument().getLength());
-                                textPane.setText("This is not a text file!");
-                                textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
-                            }catch (BadLocationException be){
-                                be.printStackTrace();
-                                System.out.println("Something REALLY went to shit");
+                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
+                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "\\" + node.toString());
+                                textPane.read(fi, node.getParent().toString() + "\\" + node.toString());
+                            } catch (IOException ex) {
+                                System.out.println("Something went to shit");
+                                ex.printStackTrace();
                             }
-                        }
+                        } else {
+                            try {
+                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
+                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "\\" + node.toString());
+                                textPane.read(fi, node.getParent().toString() + "\\" + node.toString());
+                            } catch (IOException e2) {
+                                e2.printStackTrace();
+                                try {
+                                    textPane.getDocument().remove(0, textPane.getDocument().getLength());
+                                    textPane.setText("This is not a text file!");
+                                    textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
+                                } catch (BadLocationException be) {
+                                    be.printStackTrace();
+                                    System.out.println("Something REALLY went to shit");
+                                }
+                            }
 
+                        }
+                    }else{
+                        if (node.toString().endsWith(".txt")) {
+                            try {
+                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
+                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "/" + node.toString());
+                                textPane.read(fi, node.getParent().toString() + "/" + node.toString());
+                            } catch (IOException ex) {
+                                System.out.println("Something went to shit");
+                                ex.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
+                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "/" + node.toString());
+                                textPane.read(fi, node.getParent().toString() + "/" + node.toString());
+                            } catch (IOException e2) {
+                                e2.printStackTrace();
+                                try {
+                                    textPane.getDocument().remove(0, textPane.getDocument().getLength());
+                                    textPane.setText("This is not a text file!");
+                                    textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
+                                } catch (BadLocationException be) {
+                                    be.printStackTrace();
+                                    System.out.println("Something REALLY went to shit");
+                                }
+                            }
+
+                        }
                     }
 
                 }
