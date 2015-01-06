@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Advanced_RTFEditorKit" level="project" />
+    <orderEntry type="library" name="AdvancedRTFEditorKit" level="project" />
   </component>
 </module>
