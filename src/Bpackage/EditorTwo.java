@@ -1,21 +1,14 @@
 package Bpackage;
 
-import rtf.AdvancedRTFEditorKit;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.text.*;
-import javax.swing.text.rtf.RTFEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
-import java.util.Collections;
-import java.util.Vector;
 import javax.swing.event.TreeSelectionListener;
 
 /**
@@ -32,7 +25,7 @@ public class EditorTwo {
     //Stuff
     JFrame mainFrame;
     JPanel backPanel;
-    JPanel stylePanel;
+    JPanel topPanel;
     JToolBar toolBar;
     JScrollPane scrollPane;
 
@@ -46,16 +39,18 @@ public class EditorTwo {
     DefaultMutableTreeNode node;
 
 
-    public void buildGUI(){
+    public void buildGUI() {
 
         //initialize shit
         mainFrame = new JFrame("Btext v0.1");
         backPanel = new JPanel();
         menuBar = new JMenuBar();
-        stylePanel = new JPanel();
+        topPanel = new JPanel();
         toolBar = new JToolBar();
         scrollPane = new JScrollPane();
+
         fTree = new FileTree(new File("."));
+        buildTreeListener(fTree);
 
 
         mainFrame.setContentPane(backPanel);
@@ -110,13 +105,11 @@ public class EditorTwo {
         backPanel.setLayout(new BorderLayout());
 
         //Add to stylepanel
-        stylePanel.add(bar);
-
-
+        topPanel.add(bar);
 
         //add stuff to backPanel
         mainFrame.getContentPane().add(BorderLayout.WEST, fTree);
-        mainFrame.getContentPane().add(BorderLayout.NORTH, stylePanel);
+        mainFrame.getContentPane().add(BorderLayout.NORTH, topPanel);
         mainFrame.getContentPane().add(BorderLayout.CENTER, textPane);
 
 
@@ -129,41 +122,80 @@ public class EditorTwo {
         mainFrame.setVisible(true);
     }
 
-
-
-
-
-
-
-
-/**
-    public void smallerFontSize(){
-
-            // get the current font
-            Font f = editArea.getFont();
-
-            // create a new, smaller font from the current font
-            Font f2 = new Font(f.getFontName(), f.getStyle(), f.getSize()-1);
-
-            // set the new font in the editing area
-            editArea.setFont(f2);
+    public void openFile(String path) {
+        if (path.toUpperCase().endsWith(".PNG") || path.toUpperCase().endsWith(".JPG")
+                || path.toUpperCase().endsWith(".JPEG") || path.toUpperCase().endsWith(".GIF")) {
+            try {
+                textPane.getDocument().remove(0, textPane.getDocument().getLength());
+                textPane.setText("ERROR --> This is an image file man!");
+                textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
+                return;
+            } catch (BadLocationException be) {
+                be.printStackTrace();
+                System.out.println("#1: Something REALLY went to shit dude!! Bad location n'stuff nigguh");
+                return;
+            }
+        }
+        try {
+            FileInputStream fi = new FileInputStream((path));
+            textPane.read(fi, path);
+        } catch (IOException e) {
+            System.out.println("Fuck me, i couldn't open the file man!");
+            try {
+                textPane.getDocument().remove(0, textPane.getDocument().getLength());
+                textPane.setText("ERROR --> Unknown file format, cannot open!");
+                textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
+            } catch (BadLocationException be) {
+                be.printStackTrace();
+                System.out.println("#2: Something REALLY went to shit dude!! Bad location n'stuff nigguh");
+            }
+        }
     }
 
-    public void largerFontSize(){
-
-        // get the current font
-        Font f = editArea.getFont();
-
-        // create a new, smaller font from the current font
-        Font f2 = new Font(f.getFontName(), f.getStyle(), f.getSize()+1);
-
-        // set the new font in the editing area
-        editArea.setFont(f2);
+    public void saveFile(String path){
+        try {
+            FileWriter fr = new FileWriter(path);
+            textPane.write(fr);
+            if (fr != null) {
+                fr.close();
+            }
+        } catch (IOException ex) {
+            System.out.println("Something went wrong when saving");
+            ex.printStackTrace();
+        }
     }
 
- */
 
-    public void buildMenuItemListeners(){
+    public void buildTreeListener(FileTree fileTree) {
+        // Add a listener
+        fileTree.tree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                node = (DefaultMutableTreeNode) e
+                        .getPath().getLastPathComponent();
+                System.out.println("You selected " + node);
+                String balle = node.getParent().toString();
+                System.out.println("Parent is " + balle);
+
+                if (node.toString().endsWith(".txt")) {
+                    textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
+                    if (System.getProperty("os.name").startsWith("Win")) {
+                        openFile(node.getParent().toString() + "\\" + node.toString());
+                    } else {
+                        openFile(node.getParent().toString() + "/" + node.toString());
+                    }
+                } else {
+                    if (System.getProperty("os.name").startsWith("Win")) {
+                        openFile(node.getParent().toString() + "\\" + node.toString());
+                    } else {
+                        openFile(node.getParent().toString() + "/" + node.toString());
+                    }
+                }
+            }
+        });
+    }
+
+
+    public void buildMenuItemListeners() {
 
         //Add actionlistener for sMenuItem, the SAVE AS menu button
         sMenuItem.addActionListener(new ActionListener() {
@@ -173,24 +205,16 @@ public class EditorTwo {
                 chooser.setDialogTitle("Save");
 
                 int userSelection = chooser.showSaveDialog(mainFrame);
-                if (userSelection == JFileChooser.APPROVE_OPTION){
-
-                    String fileName = chooser.getSelectedFile().toString();
-                    if (!fileName.endsWith(".txt")) {
-                        fileName += ".txt";
-                    }
-
-                    try {
-                        FileWriter fr = new FileWriter(fileName);
-                        textPane.write(fr);
-                        if(fr != null){
-                            fr.close();
-                        }
-                    }catch (Exception ex){
-                        System.out.println("Something went wrong when saving");
-                        ex.printStackTrace();
-                    }
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    saveFile(chooser.getSelectedFile().toString());
                 }
+                //Recreating the FileTree by removing it, build a new one and insert it into JFrame
+                mainFrame.remove(fTree);
+                fTree = null;
+                fTree = new FileTree(new File("."));
+                buildTreeListener(fTree);
+                mainFrame.add(BorderLayout.WEST, fTree);
+                mainFrame.revalidate();
             }
         });
 
@@ -202,19 +226,10 @@ public class EditorTwo {
                 String fileName;
                 if (System.getProperty("os.name").startsWith("Win")) {
                     fileName = node.getParent().toString() + "\\" + node.toString();
-                }else{
+                } else {
                     fileName = node.getParent().toString() + "/" + node.toString();
                 }
-                    try {
-                        FileWriter fr = new FileWriter(fileName);
-                        textPane.write(fr);
-                        if (fr != null) {
-                            fr.close();
-                        }
-                    } catch (IOException ex) {
-                        System.out.println("Something went wrong when saving");
-                        ex.printStackTrace();
-                    }
+                saveFile(fileName);
 
             }
         });
@@ -224,158 +239,15 @@ public class EditorTwo {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Load an RTF file into the editor
-                try {
-                    JFileChooser chooser = new JFileChooser();
-                    chooser.setDialogTitle("Save");
-                    int userSelection = chooser.showOpenDialog(mainFrame);
-                    if (userSelection == JFileChooser.APPROVE_OPTION) {
-                        FileInputStream fi = new FileInputStream(chooser.getSelectedFile());
-                        textPane.read(fi, chooser.getSelectedFile());
-                    }
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("Save");
+                int userSelection = chooser.showOpenDialog(mainFrame);
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    openFile(chooser.getSelectedFile().toString());
                 }
-                catch( FileNotFoundException e1 )
-                {
-                    System.out.println( "File not found" );
-                }
-                catch( IOException e2 )
-                {
-                    System.out.println( "I/O error" );
-                }
-
             }
         });
 
     }
-
-    public class FileTree extends JPanel {
-        /**
-         * Construct a FileTree
-         */
-        public FileTree(File dir) {
-            setLayout(new BorderLayout());
-
-            // Make a tree list with all the nodes, and make it a JTree
-            JTree tree = new JTree(addNodes(null, dir));
-
-            // Add a listener
-            tree.addTreeSelectionListener(new TreeSelectionListener() {
-                public void valueChanged(TreeSelectionEvent e) {
-                    node = (DefaultMutableTreeNode) e
-                            .getPath().getLastPathComponent();
-                    System.out.println("You selected " + node);
-                    String balle = node.getParent().toString();
-                    System.out.println("Parent is " + balle);
-
-                    if (System.getProperty("os.name").startsWith("Win")) {
-                        if (node.toString().endsWith(".txt")) {
-                            try {
-                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "\\" + node.toString());
-                                textPane.read(fi, node.getParent().toString() + "\\" + node.toString());
-                            } catch (IOException ex) {
-                                System.out.println("Something went to shit");
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            try {
-                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "\\" + node.toString());
-                                textPane.read(fi, node.getParent().toString() + "\\" + node.toString());
-                            } catch (IOException e2) {
-                                e2.printStackTrace();
-                                try {
-                                    textPane.getDocument().remove(0, textPane.getDocument().getLength());
-                                    textPane.setText("This is not a text file!");
-                                    textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
-                                } catch (BadLocationException be) {
-                                    be.printStackTrace();
-                                    System.out.println("Something REALLY went to shit");
-                                }
-                            }
-
-                        }
-                    }else{
-                        if (node.toString().endsWith(".txt")) {
-                            try {
-                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "/" + node.toString());
-                                textPane.read(fi, node.getParent().toString() + "/" + node.toString());
-                            } catch (IOException ex) {
-                                System.out.println("Something went to shit");
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            try {
-                                textPane.setForeground(Color.BLACK); // set color to black, indicating that the file is a text file
-                                FileInputStream fi = new FileInputStream(node.getParent().toString() + "/" + node.toString());
-                                textPane.read(fi, node.getParent().toString() + "/" + node.toString());
-                            } catch (IOException e2) {
-                                e2.printStackTrace();
-                                try {
-                                    textPane.getDocument().remove(0, textPane.getDocument().getLength());
-                                    textPane.setText("This is not a text file!");
-                                    textPane.setForeground(Color.RED); // set color to red, showing that the selected file is NOT a text file
-                                } catch (BadLocationException be) {
-                                    be.printStackTrace();
-                                    System.out.println("Something REALLY went to shit");
-                                }
-                            }
-
-                        }
-                    }
-
-                }
-            });
-
-            // Lastly, put the JTree into a JScrollPane.
-            JScrollPane scrollpane = new JScrollPane();
-            scrollpane.getViewport().add(tree);
-            add(BorderLayout.CENTER, scrollpane);
-        }
-
-        /**
-         * Add nodes from under "dir" into curTop. Highly recursive.
-         */
-        DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir) {
-            String curPath = dir.getPath();
-            DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(curPath);
-            if (curTop != null) { // should only be null at root
-                curTop.add(curDir);
-            }
-            Vector ol = new Vector();
-            String[] tmp = dir.list();
-            for (int i = 0; i < tmp.length; i++)
-                ol.addElement(tmp[i]);
-            Collections.sort(ol, String.CASE_INSENSITIVE_ORDER);
-            File f;
-            Vector files = new Vector();
-            // Make two passes, one for Dirs and one for Files. This is #1.
-            for (int i = 0; i < ol.size(); i++) {
-                String thisObject = (String) ol.elementAt(i);
-                String newPath;
-                if (curPath.equals("."))
-                    newPath = thisObject;
-                else
-                    newPath = curPath + File.separator + thisObject;
-                if ((f = new File(newPath)).isDirectory())
-                    addNodes(curDir, f);
-                else
-                    files.addElement(thisObject);
-            }
-            // Pass two: for files.
-            for (int fnum = 0; fnum < files.size(); fnum++)
-                curDir.add(new DefaultMutableTreeNode(files.elementAt(fnum)));
-            return curDir;
-        }
-
-        public Dimension getMinimumSize() {
-            return new Dimension(200, 400);
-        }
-
-        public Dimension getPreferredSize() {
-            return new Dimension(200, 400);
-        }
-    }
-
 
 }
